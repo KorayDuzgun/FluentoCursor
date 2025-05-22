@@ -1279,4 +1279,201 @@ Alerting	Slack, Discord, Email webhook entegrasyonu
 •	Backend latency, mobil crash log'ları takip edilmeli
 •	Role-play konuşma başına başarı ve terk oranı ölçülmeli
 
-![image](https://github.com/user-attachments/assets/ba4a0d3c-1fd6-4325-b467-e70559fd226a)
+
+En Kritik 5 Ekran için Flutter Kodları
+1️⃣ 📥 Speaking – Çeviri Kartı (Bildirim sonrası)
+dart
+Copy
+Edit
+class TranslationPromptCard extends StatelessWidget {
+  final String nativeSentence;
+
+  const TranslationPromptCard({required this.nativeSentence});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.all(16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text(nativeSentence, style: TextStyle(fontSize: 18)),
+            SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(
+                labelText: "Translate to English",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // submit translation
+              },
+              child: Text("Gönder"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+2️⃣ 🤖 AI Feedback Ekranı (Speaking veya Writing)
+dart
+Copy
+Edit
+class AiFeedbackCard extends StatelessWidget {
+  final String userSentence;
+  final String corrected;
+  final String tip;
+
+  const AiFeedbackCard({
+    required this.userSentence,
+    required this.corrected,
+    required this.tip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.all(16),
+      color: Colors.grey[50],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("❌ $userSentence", style: TextStyle(color: Colors.red)),
+            SizedBox(height: 8),
+            Text("✅ $corrected", style: TextStyle(color: Colors.green)),
+            SizedBox(height: 8),
+            Text("💡 $tip"),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Text("Faydalı mıydı?"),
+                IconButton(icon: Icon(Icons.thumb_up), onPressed: () {}),
+                IconButton(icon: Icon(Icons.thumb_down), onPressed: () {}),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+3️⃣ 📝 Writing Görevi Kartı
+dart
+Copy
+Edit
+class WritingTaskCard extends StatelessWidget {
+  final String prompt;
+
+  const WritingTaskCard({required this.prompt});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(prompt, style: TextStyle(fontSize: 18)),
+        SizedBox(height: 12),
+        TextField(
+          maxLines: 10,
+          decoration: InputDecoration(
+            hintText: "Write your answer here...",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        SizedBox(height: 12),
+        ElevatedButton(onPressed: () {}, child: Text("Gönder")),
+      ],
+    );
+  }
+}
+4️⃣ 📚 Vocabulary Kartı
+dart
+Copy
+Edit
+class VocabularyCard extends StatelessWidget {
+  final String word;
+  final String definition;
+  final String example;
+
+  const VocabularyCard({
+    required this.word,
+    required this.definition,
+    required this.example,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.all(12),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("📘 $word", style: TextStyle(fontSize: 20)),
+            SizedBox(height: 8),
+            Text("🔤 $definition"),
+            SizedBox(height: 8),
+            Text("✍️ Example: $example"),
+            SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(labelText: "Your sentence with the word"),
+            ),
+            SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                OutlinedButton(onPressed: () {}, child: Text("Tekrar Sor")),
+                ElevatedButton(onPressed: () {}, child: Text("Öğrendim")),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+5️⃣ 📋 Quiz Ekranı (Reading)
+dart
+Copy
+Edit
+class QuizQuestionWidget extends StatelessWidget {
+  final String question;
+  final List<String> options;
+  final int selectedIndex;
+
+  const QuizQuestionWidget({
+    required this.question,
+    required this.options,
+    required this.selectedIndex,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(question, style: TextStyle(fontSize: 18)),
+        ...List.generate(options.length, (index) {
+          return RadioListTile(
+            title: Text(options[index]),
+            value: index,
+            groupValue: selectedIndex,
+            onChanged: (val) {
+              // Handle selection
+            },
+          );
+        }),
+        SizedBox(height: 12),
+        ElevatedButton(onPressed: () {}, child: Text("Gönder"))
+      ],
+    );
+  }
+}
