@@ -1,11 +1,17 @@
-FluentoApp – Core Framework Plan (Backend + Frontend)
+ FluentoApp – Core Framework Plan (Backend + Frontend + DB + Security)
+Bu yapı, FluentoApp’in tüm modüllerinin üzerine inşa edileceği temel yazılım çatısını tanımlar.
+Kapsam:
 
-Bu bölüm, FluentoApp’in tüm modüllerinin üzerinde çalışacağı temel yazılım çatısını tanımlar. Hem .NET Core 8 Web API (Backend) hem de Flutter (Frontend) tarafı için yapılandırılmıştır. Tüm modüller, bu mimariye bağlı kalmalıdır.
+Backend: ASP.NET Core 8 Web API
+
+Frontend: Flutter
+
+Veritabanı: PostgreSQL + Entity Framework Core
+
+Güvenlik: Role-based + Feature-based + OWASP uyumlu
 
 🧠 1. BACKEND FRAMEWORK (.NET 8 Web API)
-
 🎯 Genel Prensipler
-
 Clean Architecture
 
 Layered separation (API / Application / Domain / Infrastructure)
@@ -13,171 +19,123 @@ Layered separation (API / Application / Domain / Infrastructure)
 RESTful + versioned endpoints
 
 📦 Temel Modüller
+✅ 1.1 Authentication
+JWT + Refresh Token sistemi
 
-1.1 Authentication
+OAuth2 (Google / Apple) desteği
 
-Kullanıcı kayıt, giriş, refresh token desteği
+Token içeriği: userId, email, role, featureKeys
 
-JWT Token üretimi ve doğrulaması
+✅ 1.2 Authorization
+Role-based: guest, free_user, premium_user, admin
 
-OAuth2 destekli sosyal giriş (Google / Apple)
+Feature-based access kontrol: örn. feature_ai_feedback, feature_tts_native
 
-1.2 Authorization
+Authorize(Policy = "HasFeature:xyz") yapısı
 
-Role-based auth (admin, user, guest)
+✅ 1.3 Logging
+Serilog: File + Seq + Console
 
-Feature-based permission: hasFeature("feature_ai_feedback")
+Log context: userId, endpoint, responseTime
 
-Policy-based attribute yönetimi
+✅ 1.4 Exception Handling
+Global middleware
 
-1.3 Logging
+Custom exceptions: ValidationException, ApiException
 
-Serilog + File + Console + Seq desteği
+Log + mask sensitive details
 
-Kullanıcı bazlı işlem izleme
-
-1.4 Error Handling
-
-Global UseExceptionHandler
-
-Özel ApiException, ValidationException, UnauthorizedException
-
-Hatalarda stack trace gizlenmeli, loglanmalı
-
-1.5 Caching
-
+✅ 1.5 Caching
 MemoryCache (default)
 
-Redis opsiyonel altyapı
+Redis (opsiyonel)
 
-[OutputCache] veya IMemoryCache bazlı yapı
+Kullanıcıya özel cache key yapısı: cache:user:{id}:progress
 
-1.6 Input Validation
+✅ 1.6 Validation
+FluentValidation
 
-FluentValidation + DataAnnotations
+Centralized error response standard
 
-API endpoint başında ModelState.IsValid kontrolü
+✅ 1.7 Swagger + Versioning
+v1, v2 endpoint ayrımı
 
-1.7 Swagger + Versioning
+Swagger UI + Bearer token testi
 
-Swagger UI v2 aktif olmalı
+✅ 1.8 Rate Limiting
+IP & userId bazlı sınır
 
-Bearer token test desteği
+AspNetCoreRateLimit middleware
 
-v1, v2 route versioning
+✅ 1.9 Multilingual Support
+Accept-Language header üzerinden içerik yönlendirme
 
-1.8 Rate Limiting
-
-Kullanıcı ID + IP bazlı sınırlama
-
-AspNetCoreRateLimit ile uygulanır
-
-1.9 Common Responses
-
-APIResponse yapısı: success, error, data, message
-
-1.10 HealthCheck
-
-/healthz endpoint üzerinden servis durumu kontrolü
-
-1.11 Multilingual API Support
-
-Accept-Language header desteklenmeli
-
-📱 2. FRONTEND FRAMEWORK (Flutter + Dart)
-
-🎯 Genel Prensipler
-
-Feature-based klasörleme (modules: speaking, writing, etc.)
-
-Reusable widgets
-
-Mobile-first, offline-ready
-
+📱 2. FRONTEND FRAMEWORK (Flutter)
 📦 Temel Yapılar
+✅ 2.1 Auth Layer
+Login/Register akışı
 
-2.1 Authentication Layer
+flutter_secure_storage kullanarak token saklama
 
-Token bazlı giriş
+Biometric giriş (local_auth)
 
-flutter_secure_storage ile güvenli saklama
+✅ 2.2 State Management
+Riverpod
 
-Biometrik giriş opsiyonu (local_auth)
+go_router ile modüler yönlendirme
 
-2.2 State Management
+✅ 2.3 Network Layer
+Dio + Interceptors
 
-Riverpod (provider override, async support)
+Authorization header
 
-go_router ile modüler navigasyon
+Retry mekanizması
 
-2.3 Network Layer
+Global error handler
 
-Dio + Interceptors (token ekleme, error handler)
+✅ 2.4 UI Framework
+Reusable Widget’lar: AppCard, AppTextField, AppButton
 
-Retry mekanizması + loglama
+Responsive layout
 
-2.4 UI Framework
+Theme + Typography + Padding standardizasyonu
 
-Base AppCard, AppTextInput, AppButton, AppModal
+✅ 2.5 Offline & Local Storage
+Hive: user logs, cached kelime kartları
 
-Theme tanımı (dark/light, renk, padding, border)
+SharedPreferences: dil, ayar vs.
 
-Responsive grid desteği
+✅ 2.6 Permission Management
+Mic, Notification, Biometric izni yöneticisi
 
-2.5 Error Dialog & Logging
+🗃️ 3. VERİTABANI ŞEMASI (PostgreSQL – EF Core)
+Tablo	Açıklama
+Users	Id, Email, PasswordHash, Role, CreatedAt
+Features	Id, Key, Description
+UserFeatures	userId, featureId
+Vocabulary	Word, Definition, POS, Synonyms, Antonyms, Example, Level
+UserVocabulary	userId, vocabId, status (learned/review), exampleSentence, updatedAt
+SpeakingPrompts	Sentence, Level
+UserSpeakingLogs	userId, promptId, userText, aiCorrection, elapsedTime, createdAt
+WritingPrompts	Topic, Level
+UserWritingLogs	userId, promptId, text, aiCorrection, grammarTips, createdAt
+ReadingPassages	Title, Content, Level, audioUrl
+ReadingQuizzes	passageId, question, options[], correctIndex
+UserReadingLogs	userId, passageId, answers[], score, duration
+AssessmentSessions	userId, startedAt, status
+AssessmentResults	userId, readingScore, writingLevel, vocabScore, overallLevel, createdAt
+Achievements	Name, Criteria, Icon
+UserProgressStats	userId, month, speakingTime, wordCount, correctRate
 
-Standart showErrorDialog(context, error) fonksiyonu
-
-AppLogger → konsol, remote log
-
-2.6 Permission Management
-
-Notification, mic, biometric izinleri request + check
-
-2.7 Local Storage
-
-Hive: offline cache
-
-SharedPreferences: ayar tutma
-
-2.8 Localization
-
-intl paketi + JSON tabanlı çeviri dosyaları
-
-2.9 Analytics (opsiyonel)
-
-Firebase Analytics / Mixpanel desteği
-
-🔐 3. GÜVENLİK STANDARTLARI
-
-Alan
-
-Önlem / Teknoloji
-
-API Erişimi
-
-JWT Bearer Token + IP rate limit
-
-UI Yetkisi
-
-Feature gating (UI buton gizleme)
-
-Token Saklama
-
-flutter_secure_storage
-
-Biometrik
-
-local_auth (PIN / TouchID)
-
-Input
-
-XSS/Injection temizliği, validation
-
-AI Kullanımı
-
-Açık rıza zorunluluğu (GDPR/KVKK)
-
-Veritabanı
-
-SQL log sansürleme, sadece gerekli alanları döndürme
+🔐 4. GÜVENLİK ÖNLEMLERİ
+Alan	Önlem / Teknoloji
+API erişimi	JWT Token + IP Rate Limit
+UI yetkisi	Feature Gate: buton/ekran gizleme
+Token güvenliği	flutter_secure_storage (AES)
+Giriş işlemleri	Password hashing (bcrypt), OAuth2
+AI servisleri	Prompt loglama + rate limit
+Veri gizliliği	GDPR/KVKK uyumlu: data export/silme/consent
+Admin işlemleri	2FA + IP safelisting önerilir
+Database	Role separation (readonly/readwrite), minimal column exposure
+XSS / SQL Injection	Input validation, parametreli sorgular
+TTS ve Bildirim	Kullanıcıdan açık izin alınmalı (device & app)
